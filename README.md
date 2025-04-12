@@ -1,4 +1,4 @@
-# Screen Recording Demo App
+# Screen Recording Demo App (notLoom)
 
 A web application for recording, submitting, and reviewing demo videos. Built with React, Firebase, and Google Drive API.
 
@@ -101,4 +101,4 @@ src/
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.
