@@ -18,8 +18,7 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Comment out the domain restriction for testing
-// If you need to restrict to specific domains later, uncomment this:
-// googleProvider.setCustomParameters({
-//   hd: 'pursuit.org'
-// }); 
+// Restrict authentication to Pursuit organization emails
+googleProvider.setCustomParameters({
+  hd: 'pursuit.org'
+}); 

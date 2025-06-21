@@ -1,0 +1,91 @@
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { 
+  User,
+  signInWithPopup,
+  signOut as firebaseSignOut,
+  onAuthStateChanged
+} from 'firebase/auth';
+import { auth, googleProvider } from '../services/firebase';
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+  signIn: () => Promise<void>;
+  signOut: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log("Auth state changed:", user ? "User logged in" : "No user");
+      
+      if (user) {
+        // Check if the user has a Pursuit email
+        const isPursuitEmail = user.email?.endsWith('@pursuit.org');
+        
+        if (!isPursuitEmail) {
+          console.log("Non-Pursuit email detected, signing out:", user.email);
+          setError("Only @pursuit.org accounts are allowed.");
+          await signOut();
+          setUser(null);
+        } else {
+          setUser(user);
+          setError(null);
+        }
+      } else {
+        setUser(null);
+      }
+      
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const signIn = async () => {
+    try {
+      setError(null);
+      console.log("Starting Google sign in...");
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      // Email validation happens in onAuthStateChanged
+      console.log("Sign in successful:", result.user.displayName);
+      return result;
+    } catch (error: any) {
+      console.error("Sign in error:", error);
+      setError(error.message || "Sign in failed. Please try again.");
+      throw error;
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await firebaseSignOut(auth);
+      setUser(null);
+    } catch (error) {
+      console.error('Error signing out:', error);
+      throw error;
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, loading, error, signIn, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}; 

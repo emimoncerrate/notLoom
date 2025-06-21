@@ -13,18 +13,22 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Select,
+  FormControl,
+  InputLabel,
+  Checkbox,
+  FormControlLabel,
+  Divider,
 } from '@mui/material';
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface Submission {
   id: string;
-  clarity: number;
-  technicalDepth: number;
-  presentation: number;
-  strengths: string;
-  improvements: string;
+  meetsAllCriteria: string;
+  proudOf: string;
+  improve: string;
   videoUrl: string;
   timestamp: Date;
   status: 'pending' | 'reviewed';
@@ -37,8 +41,9 @@ const StaffPage: React.FC = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({
-    status: 'all',
-    search: '',
+    cohort: 'all',
+    assignment: 'all',
+    reviewed: 'all',
   });
 
   useEffect(() => {
@@ -52,7 +57,7 @@ const StaffPage: React.FC = () => {
       const submissionsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-        timestamp: doc.data().timestamp.toDate(),
+        timestamp: doc.data().timestamp?.toDate() || new Date(),
       })) as Submission[];
       
       setSubmissions(submissionsData);
@@ -76,16 +81,17 @@ const StaffPage: React.FC = () => {
     }
   };
 
+  const handleFilterChange = (event: React.ChangeEvent<{ name?: string; value: unknown }>) => {
+    const { name, value } = event.target;
+    setFilter(prev => ({
+      ...prev,
+      [name as string]: value,
+    }));
+  };
+
   const filteredSubmissions = submissions.filter(submission => {
-    if (filter.status !== 'all' && submission.status !== filter.status) {
+    if (filter.reviewed !== 'all' && submission.status !== filter.reviewed) {
       return false;
-    }
-    if (filter.search) {
-      const searchLower = filter.search.toLowerCase();
-      return (
-        submission.strengths.toLowerCase().includes(searchLower) ||
-        submission.improvements.toLowerCase().includes(searchLower)
-      );
     }
     return true;
   });
@@ -102,62 +108,109 @@ const StaffPage: React.FC = () => {
     <Container maxWidth="lg">
       <Box sx={{ py: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Review Submissions
+          Staff Dashboard
         </Typography>
 
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={6}>
-            <TextField
-              select
-              fullWidth
-              label="Filter by Status"
-              value={filter.status}
-              onChange={(e) => setFilter(prev => ({ ...prev, status: e.target.value }))}
-            >
-              <MenuItem value="all">All</MenuItem>
-              <MenuItem value="pending">Pending</MenuItem>
-              <MenuItem value="reviewed">Reviewed</MenuItem>
-            </TextField>
+        <Paper sx={{ p: 3, mb: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Filters
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Cohort</InputLabel>
+                <Select
+                  name="cohort"
+                  value={filter.cohort}
+                  label="Cohort"
+                  onChange={handleFilterChange as any}
+                >
+                  <MenuItem value="all">All Cohorts</MenuItem>
+                  <MenuItem value="9.1">Cohort 9.1</MenuItem>
+                  <MenuItem value="9.2">Cohort 9.2</MenuItem>
+                  <MenuItem value="9.3">Cohort 9.3</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Assignment</InputLabel>
+                <Select
+                  name="assignment"
+                  value={filter.assignment}
+                  label="Assignment"
+                  onChange={handleFilterChange as any}
+                >
+                  <MenuItem value="all">All Assignments</MenuItem>
+                  <MenuItem value="capstone">Capstone</MenuItem>
+                  <MenuItem value="portfolio">Portfolio</MenuItem>
+                  <MenuItem value="sprint">Build Sprint</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Reviewed</InputLabel>
+                <Select
+                  name="reviewed"
+                  value={filter.reviewed}
+                  label="Reviewed"
+                  onChange={handleFilterChange as any}
+                >
+                  <MenuItem value="all">All Submissions</MenuItem>
+                  <MenuItem value="reviewed">Reviewed</MenuItem>
+                  <MenuItem value="pending">Pending Review</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Search"
-              value={filter.search}
-              onChange={(e) => setFilter(prev => ({ ...prev, search: e.target.value }))}
-            />
-          </Grid>
-        </Grid>
+        </Paper>
 
-        <Grid container spacing={3}>
-          {filteredSubmissions.map((submission) => (
-            <Grid item xs={12} key={submission.id}>
-              <Card>
+        <Box sx={{ mb: 4 }}>
+          {filteredSubmissions.length === 0 ? (
+            <Paper sx={{ p: 3, textAlign: 'center' }}>
+              <Typography>No submissions found</Typography>
+            </Paper>
+          ) : (
+            filteredSubmissions.map((submission) => (
+              <Card key={submission.id} sx={{ mb: 3 }}>
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                     <Typography variant="h6">
-                      Submission from {submission.timestamp.toLocaleDateString()}
+                      Jane Doe
                     </Typography>
                     <Chip
-                      label={submission.status}
+                      label={submission.status === 'reviewed' ? 'Reviewed' : 'Pending Review'}
                       color={submission.status === 'reviewed' ? 'success' : 'warning'}
                     />
                   </Box>
 
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="subtitle1">Ratings:</Typography>
-                      <Typography>Clarity: {submission.clarity}/5</Typography>
-                      <Typography>Technical Depth: {submission.technicalDepth}/5</Typography>
-                      <Typography>Presentation: {submission.presentation}/5</Typography>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="subtitle1">Self Evaluation:</Typography>
-                      <Typography><strong>Strengths:</strong> {submission.strengths}</Typography>
-                      <Typography><strong>Improvements:</strong> {submission.improvements}</Typography>
-                    </Grid>
-                  </Grid>
+                  <Box 
+                    sx={{ 
+                      width: '100%', 
+                      height: 150, 
+                      bgcolor: 'rgba(0,0,0,0.1)', 
+                      mb: 2,
+                      borderRadius: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Typography variant="body2" color="text.secondary">
+                      Video Preview
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle2">
+                      Meets all criteria: {submission.meetsAllCriteria === 'yes' ? 'Yes' : 'No'}
+                    </Typography>
+                    <Typography variant="body2"><strong>Proud of:</strong> {submission.proudOf}</Typography>
+                    <Typography variant="body2"><strong>Would improve:</strong> {submission.improve}</Typography>
+                  </Box>
                 </CardContent>
+                <Divider />
                 <CardActions>
                   <Button
                     size="small"
@@ -169,18 +222,27 @@ const StaffPage: React.FC = () => {
                   </Button>
                   <Button
                     size="small"
-                    onClick={() => handleStatusChange(
-                      submission.id,
-                      submission.status === 'pending' ? 'reviewed' : 'pending'
-                    )}
+                    variant="outlined"
                   >
-                    {submission.status === 'pending' ? 'Mark as Reviewed' : 'Mark as Pending'}
+                    Leave Feedback
                   </Button>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={submission.status === 'reviewed'}
+                        onChange={() => handleStatusChange(
+                          submission.id,
+                          submission.status === 'pending' ? 'reviewed' : 'pending'
+                        )}
+                      />
+                    }
+                    label="Marked as Reviewed"
+                  />
                 </CardActions>
               </Card>
-            </Grid>
-          ))}
-        </Grid>
+            ))
+          )}
+        </Box>
       </Box>
     </Container>
   );
