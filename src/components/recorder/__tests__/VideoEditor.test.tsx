@@ -1,36 +1,37 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import VideoEditor from '../VideoEditor';
 import { toast } from 'react-hot-toast';
 
 // Mock the toast function
-jest.mock('react-hot-toast', () => ({
-  toast: jest.fn()
+vi.mock('react-hot-toast', () => ({
+  toast: vi.fn()
 }));
 
 // Mock the MediaRecorder
-global.MediaRecorder = jest.fn().mockImplementation(() => ({
-  start: jest.fn(),
-  stop: jest.fn(),
-  ondataavailable: jest.fn(),
-  onstop: jest.fn(),
+global.MediaRecorder = vi.fn().mockImplementation(() => ({
+  start: vi.fn(),
+  stop: vi.fn(),
+  ondataavailable: vi.fn(),
+  onstop: vi.fn(),
   state: 'inactive'
 }));
 
 // Mock the MediaSource
-global.MediaSource = jest.fn().mockImplementation(() => ({
-  addSourceBuffer: jest.fn(),
-  endOfStream: jest.fn(),
+global.MediaSource = vi.fn().mockImplementation(() => ({
+  addSourceBuffer: vi.fn(),
+  endOfStream: vi.fn(),
   readyState: 'open'
 }));
 
 describe('VideoEditor', () => {
   const mockVideoBlob = new Blob(['test video content'], { type: 'video/webm' });
-  const mockOnSave = jest.fn();
-  const mockOnRerecord = jest.fn();
+  const mockOnSave = vi.fn();
+  const mockOnRerecord = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should initialize with video blob', () => {
@@ -73,7 +74,7 @@ describe('VideoEditor', () => {
   it('should handle finalization errors gracefully', async () => {
     // Mock a failure in createMediaSourceFromSegments
     const mockError = new Error('Test error');
-    jest.spyOn(global, 'MediaSource').mockImplementationOnce(() => {
+    vi.spyOn(global, 'MediaSource').mockImplementationOnce(() => {
       throw mockError;
     });
 
