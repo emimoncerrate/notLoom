@@ -59,10 +59,12 @@ const HomePage: React.FC<HomePageProps> = ({ roleSpecificView }) => {
       <AppBar position="static" sx={{ backgroundColor: '#4646EF' }}>
         <Toolbar>
           <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-            <img src="/logo.svg" alt="Pursuit Logo" height="32" style={{ marginRight: '10px' }} />
-            <Typography variant="h6" component="div">
-              PursuitShipped
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
+              <img src="/logo.svg" alt="Pursuit Logo" height="32" style={{ marginRight: '10px' }} />
+              <Typography variant="h6" component="div">
+                PursuitShipped
+              </Typography>
+            </Box>
           </Box>
           {user && (
             <div>
@@ -182,7 +184,7 @@ const HomePage: React.FC<HomePageProps> = ({ roleSpecificView }) => {
                   <Button
                     variant="outlined"
                     size="large"
-                    onClick={() => navigateTo('/submissions')}
+                    onClick={() => navigateTo(roleSpecificView === 'staff' ? '/staff/submissions' : '/submissions')}
                     sx={{ 
                       mt: 'auto',
                       borderColor: '#4646EF',

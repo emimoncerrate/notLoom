@@ -3,7 +3,8 @@ import {
   User,
   signInWithPopup,
   signOut as firebaseSignOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  GoogleAuthProvider
 } from 'firebase/auth';
 import { auth, googleProvider, db } from '../services/firebase';
 import { doc, getDoc, setDoc, FirestoreError } from 'firebase/firestore';
@@ -73,8 +74,11 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   role: string | null;
+  driveAccessToken: string | null;
   signIn: () => Promise<any>;
+  signInWithAccountSelect: () => Promise<any>;
   signOut: () => Promise<void>;
+  getDriveAccessToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -84,12 +88,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [driveAccessToken, setDriveAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       // console.log(`Auth state change. User: ${user ? user.uid : 'null'}. Current loading: ${loading}`);
       
       if (user) {
+        // Only allow @pursuit.org accounts
         const isPursuitEmail = user.email?.endsWith('@pursuit.org');
         
         if (!isPursuitEmail) {
@@ -100,10 +106,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
           setRole(null);
         } else {
+          console.log("Valid email detected:", user.email); // Add debug log
           setUser(user);
           setError(null);
           // console.log(`Fetching role for valid user: ${user.uid}`);
           const fetchedRole = await fetchOrCreateUserRole(user);
+          console.log("Role fetched:", fetchedRole); // Add debug log
           setRole(fetchedRole);
           // console.log(`Auth state updated: User: ${user.uid}, Role: ${fetchedRole}`);
         }
@@ -142,6 +150,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signInWithAccountSelect = async () => {
+    setLoading(true);
+    setError(null);
+    setRole(null);
+    try {
+      // Create a new provider instance specifically for account selection
+      const selectAccountProvider = new GoogleAuthProvider();
+      selectAccountProvider.setCustomParameters({
+        hd: 'pursuit.org',
+        prompt: 'select_account'  // Always force account picker
+      });
+      
+      console.log("Starting Google sign in with account selection...");
+      const result = await signInWithPopup(auth, selectAccountProvider);
+      console.log("Account selection sign in successful for:", result.user.displayName);
+      return result;
+    } catch (error: any) {
+      console.error("Account selection sign in error:", error);
+      setError(error.message || "Sign in failed. Please try again.");
+      setUser(null);
+      setRole(null);
+      setLoading(false);
+      throw error;
+    }
+  };
+
   const signOut = async () => {
     setLoading(true); // Indicate loading during sign out
     try {
@@ -150,6 +184,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // State updates (user, role to null) handled by onAuthStateChanged
       setUser(null);
       setRole(null);
+      setDriveAccessToken(null);
     } catch (error) {
       // Keep critical errors visible
       console.error('Error signing out:', error);
@@ -160,10 +195,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const getDriveAccessToken = async (): Promise<string | null> => {
+    if (!user) {
+      console.error('No user logged in');
+      return null;
+    }
+
+    try {
+      // Force fresh authentication to get OAuth access token with Drive scope
+      console.log('🔄 Re-authenticating to get OAuth token with Drive scope...');
+      
+      // Create provider with Drive scope
+      const driveProvider = new GoogleAuthProvider();
+      driveProvider.setCustomParameters({
+        hd: 'pursuit.org',
+        prompt: 'consent' // Force consent to ensure we get the access token
+      });
+      driveProvider.addScope('https://www.googleapis.com/auth/drive.file');
+      
+      const result = await signInWithPopup(auth, driveProvider);
+      
+      // Get the OAuth access token from the credential
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const accessToken = credential?.accessToken;
+      
+      if (accessToken) {
+        console.log('✅ Got fresh OAuth access token with Drive scope');
+        setDriveAccessToken(accessToken);
+        return accessToken;
+      }
+      
+      throw new Error('Could not retrieve OAuth access token from credential');
+    } catch (error) {
+      console.error('Failed to get Drive access token:', error);
+      return null;
+    }
+  };
+
   // console.log("AuthContext Provider rerendering with values:", { user: user?.uid, loading, error, role });
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, role, signIn, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      error, 
+      role, 
+      driveAccessToken,
+      signIn, 
+      signInWithAccountSelect, 
+      signOut,
+      getDriveAccessToken
+    }}>
       {children}
     </AuthContext.Provider>
   );

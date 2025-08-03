@@ -23,16 +23,17 @@ a:hover {
 }
 
 body {
-  /* --- TEMPORARY DEBUG STYLES --- */
-  // background-color: black !important; 
-  // color: white !important;
-  /* --- END TEMPORARY DEBUG STYLES --- */
-
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
 }
 
 h1 {
@@ -69,5 +70,149 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+/* Responsive Design for Tablets and Mobile */
+
+/* Tablet styles (768px and below) */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+  
+  /* Reduce heading sizes */
+  h1 {
+    font-size: 24px !important;
+  }
+  
+  h2 {
+    font-size: 20px !important;
+  }
+  
+  h3 {
+    font-size: 18px !important;
+  }
+  
+  /* Adjust prompt text */
+  .prompt-text {
+    font-size: 14px !important;
+  }
+  
+  /* Button adjustments */
+  button {
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+    margin: 5px 0 !important;
+  }
+  
+  /* Stack buttons vertically */
+  .button-group {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  
+  /* Container adjustments */
+  .container {
+    padding: 15px !important;
+    margin: 10px !important;
+  }
+  
+  /* Dashboard header adjustments */
+  .dashboard-header {
+    flex-direction: column !important;
+    text-align: center !important;
+    gap: 10px !important;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 22px !important;
+  }
+}
+
+/* Mobile phone styles (480px and below) */
+@media (max-width: 480px) {
+  body {
+    padding: 5px;
+  }
+  
+  /* Further reduce heading sizes */
+  h1 {
+    font-size: 20px !important;
+  }
+  
+  h2 {
+    font-size: 18px !important;
+  }
+  
+  h3 {
+    font-size: 16px !important;
+  }
+  
+  h4 {
+    font-size: 14px !important;
+  }
+  
+  /* Smaller prompt text */
+  .prompt-text, p {
+    font-size: 12px !important;
+  }
+  
+  /* Mobile button styles */
+  button {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    width: 100% !important;
+    margin: 3px 0 !important;
+  }
+  
+  /* Containers take more screen width */
+  .container, .login-container, .dashboard-container {
+    width: calc(100% - 20px) !important;
+    max-width: none !important;
+    margin: 10px auto !important;
+    padding: 12px !important;
+  }
+  
+  /* Login form adjustments */
+  .login-form {
+    padding: 20px 15px !important;
+  }
+  
+  /* Dashboard adjustments */
+  .dashboard-header {
+    padding: 8px 15px !important;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 18px !important;
+  }
+  
+  .user-info {
+    font-size: 10px !important;
+  }
+  
+  /* Quick actions section */
+  .quick-actions {
+    margin: 15px 0 !important;
+  }
+  
+  .quick-actions h3 {
+    font-size: 14px !important;
+  }
+  
+  /* User info card */
+  .user-info-card {
+    padding: 10px !important;
+    margin: 15px 0 !important;
+  }
+  
+  .user-info-card h4 {
+    font-size: 12px !important;
+  }
+  
+  .user-info-card p {
+    font-size: 10px !important;
+    margin: 3px 0 !important;
   }
 } 

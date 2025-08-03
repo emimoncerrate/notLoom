@@ -1,5 +1,11 @@
+import { expect, afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+
+// runs a cleanup after each test case (e.g. clearing jsdom)
+afterEach(() => {
+  cleanup();
+});
 
 // Mock URL.createObjectURL
 global.URL.createObjectURL = vi.fn(() => 'mocked-url');

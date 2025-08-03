@@ -44,6 +44,7 @@ const StaffPage: React.FC = () => {
     cohort: 'all',
     assignment: 'all',
     reviewed: 'all',
+    dateRange: 'all', // new filter
   });
 
   useEffect(() => {
@@ -93,6 +94,41 @@ const StaffPage: React.FC = () => {
     if (filter.reviewed !== 'all' && submission.status !== filter.reviewed) {
       return false;
     }
+    
+    // Add cohort filtering
+    if (filter.cohort !== 'all') {
+      const submissionCohort = (submission as any).cohort || 'Unknown';
+      if (submissionCohort !== filter.cohort) {
+        return false;
+      }
+    }
+    
+    // Add date filtering
+    if (filter.dateRange !== 'all') {
+      const now = new Date();
+      const submissionDate = submission.timestamp;
+      
+      switch (filter.dateRange) {
+        case 'today':
+          if (submissionDate.toDateString() !== now.toDateString()) {
+            return false;
+          }
+          break;
+        case 'week':
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          if (submissionDate < weekAgo) {
+            return false;
+          }
+          break;
+        case 'month':
+          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          if (submissionDate < monthAgo) {
+            return false;
+          }
+          break;
+      }
+    }
+    
     return true;
   });
 
@@ -160,6 +196,22 @@ const StaffPage: React.FC = () => {
                   <MenuItem value="all">All Submissions</MenuItem>
                   <MenuItem value="reviewed">Reviewed</MenuItem>
                   <MenuItem value="pending">Pending Review</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <FormControl fullWidth>
+                <InputLabel>Date Range</InputLabel>
+                <Select
+                  name="dateRange"
+                  value={filter.dateRange}
+                  label="Date Range"
+                  onChange={handleFilterChange as any}
+                >
+                  <MenuItem value="all">All Time</MenuItem>
+                  <MenuItem value="today">Today</MenuItem>
+                  <MenuItem value="week">This Week</MenuItem>
+                  <MenuItem value="month">This Month</MenuItem>
                 </Select>
               </FormControl>
             </Grid>

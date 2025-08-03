@@ -35,7 +35,7 @@ const SelfEvaluationForm: React.FC<SelfEvaluationFormProps> = ({
   videoBlob,
   videoNotes,
 }) => {
-  const { currentUser } = useAuth();
+  const { user: currentUser } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     meetsAllCriteria: 'yes',
     proudOf: '',
