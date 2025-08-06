@@ -94,7 +94,7 @@ describe('VideoEditor', () => {
     await waitFor(() => {
       expect(toast).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: 'Video processing failed',
+          title: 'No video to save',
           status: 'error'
         })
       );

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator for Screen Recorder</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        canvas { margin: 10px; border: 1px solid #ccc; }
+        .download-links { margin-top: 20px; }
+        .download-links a { display: block; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>Screen Recorder Extension Icon Generator</h1>
+    <p>Click the button below to generate and download all required icon sizes.</p>
+    
+    <button onclick="generateIcons()">Generate Icons</button>
+    
+    <div id="canvases"></div>
+    <div id="downloadLinks" class="download-links"></div>
+
+    <script>
+        function generateIcons() {
+            const sizes = [16, 32, 48, 128];
+            const canvasContainer = document.getElementById('canvases');
+            const linksContainer = document.getElementById('downloadLinks');
+            
+            canvasContainer.innerHTML = '';
+            linksContainer.innerHTML = '';
+            
+            sizes.forEach(size => {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                canvas.style.width = size * 4 + 'px';
+                canvas.style.height = size * 4 + 'px';
+                
+                const ctx = canvas.getContext('2d');
+                
+                // Draw icon
+                drawIcon(ctx, size);
+                
+                // Add to page
+                canvasContainer.appendChild(canvas);
+                
+                // Create download link
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `icon${size}.png`;
+                    a.textContent = `Download icon${size}.png`;
+                    linksContainer.appendChild(a);
+                });
+            });
+        }
+        
+        function drawIcon(ctx, size) {
+            // Clear background
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Draw camera body (rectangle with rounded corners)
+            const padding = size * 0.15;
+            const width = size - (padding * 2);
+            const height = size * 0.7;
+            const x = padding;
+            const y = (size - height) / 2;
+            const radius = size * 0.1;
+            
+            ctx.fillStyle = '#1e40af';
+            roundedRect(ctx, x, y, width, height, radius);
+            ctx.fill();
+            
+            // Draw lens (circle)
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const lensRadius = size * 0.15;
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, lensRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            
+            // Draw inner lens
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, lensRadius * 0.6, 0, 2 * Math.PI);
+            ctx.fillStyle = '#e5e7eb';
+            ctx.fill();
+            
+            // Draw record dot
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, lensRadius * 0.3, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ef4444';
+            ctx.fill();
+        }
+        
+        function roundedRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+        }
+    </script>
+</body>
+</html>

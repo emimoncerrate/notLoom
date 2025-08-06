@@ -1,0 +1,226 @@
+/* Floating Controls Styles for Screen Recorder */
+
+.screen-recorder-floating-controls {
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  z-index: 2147483647 !important; /* Maximum z-index */
+  
+  background: rgba(0, 0, 0, 0.9) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  min-width: 200px !important;
+  
+  color: white !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 12px !important;
+  
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  
+  user-select: none !important;
+  cursor: default !important;
+}
+
+.screen-recorder-floating-controls * {
+  box-sizing: border-box !important;
+}
+
+/* Header */
+.controls-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 8px !important;
+  padding-bottom: 8px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.recording-indicator {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+}
+
+.rec-dot {
+  width: 8px !important;
+  height: 8px !important;
+  background: #ef4444 !important;
+  border-radius: 50% !important;
+  animation: rec-pulse 1.5s infinite !important;
+}
+
+@keyframes rec-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.timer {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace !important;
+  font-weight: 600 !important;
+  color: #10b981 !important;
+  font-size: 11px !important;
+}
+
+/* Controls Body */
+.controls-body {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.control-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 6px !important;
+  padding: 6px 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-size: 12px !important;
+  color: white !important;
+  min-width: 32px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+.control-btn:active {
+  transform: translateY(0) !important;
+}
+
+.pause-btn:hover {
+  background: rgba(251, 191, 36, 0.2) !important;
+  border-color: rgba(251, 191, 36, 0.4) !important;
+}
+
+.stop-btn:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Volume Indicator */
+.volume-indicator {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 6px !important;
+  padding: 4px 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.volume-label {
+  font-size: 10px !important;
+  opacity: 0.8 !important;
+}
+
+#volume-canvas {
+  border-radius: 2px !important;
+  background: #374151 !important;
+}
+
+/* Drag Handle */
+.drag-handle {
+  position: absolute !important;
+  top: 50% !important;
+  left: -8px !important;
+  transform: translateY(-50%) !important;
+  
+  width: 6px !important;
+  height: 20px !important;
+  background: rgba(255, 255, 255, 0.3) !important;
+  border-radius: 3px !important;
+  cursor: grab !important;
+  
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 8px !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  line-height: 1 !important;
+  letter-spacing: -1px !important;
+}
+
+.drag-handle:hover {
+  background: rgba(255, 255, 255, 0.5) !important;
+}
+
+.drag-handle:active {
+  cursor: grabbing !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .screen-recorder-floating-controls {
+    min-width: 180px !important;
+    padding: 10px !important;
+  }
+  
+  .control-btn {
+    min-width: 28px !important;
+    height: 24px !important;
+    font-size: 11px !important;
+  }
+  
+  .timer {
+    font-size: 10px !important;
+  }
+}
+
+/* Animation for showing controls */
+.screen-recorder-floating-controls {
+  animation: slideInFromRight 0.3s ease-out !important;
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%) !important;
+    opacity: 0 !important;
+  }
+  to {
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Ensure controls stay above everything */
+.screen-recorder-floating-controls,
+.screen-recorder-floating-controls * {
+  position: relative !important;
+  z-index: inherit !important;
+}
+
+/* Override any conflicting styles */
+.screen-recorder-floating-controls {
+  all: initial !important;
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  z-index: 2147483647 !important;
+  
+  background: rgba(0, 0, 0, 0.9) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  min-width: 200px !important;
+  
+  color: white !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 12px !important;
+  
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  
+  user-select: none !important;
+  cursor: default !important;
+}

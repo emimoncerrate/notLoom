@@ -1,4 +1,4 @@
-import { GoogleAuth } from 'google-auth-library';
+// Note: google-auth-library not needed for client-side implementation
 
 // Google Drive API integration for video uploads
 export class GoogleDriveService {
@@ -51,7 +51,8 @@ export class GoogleDriveService {
       description?: string;
       mimeType?: string;
       folderId?: string;
-    }
+    },
+    onProgress?: (progress: number) => void
   ): Promise<{ id: string; name: string; webViewLink: string }> {
     if (!this.accessToken) {
       throw new Error('Google Drive not initialized. Please authenticate first.');
@@ -65,7 +66,8 @@ export class GoogleDriveService {
       let folderId = metadata.folderId;
       if (!folderId) {
         console.log('📁 Creating/finding Pursuit Demos folder...');
-        folderId = await this.createPursuitFolder();
+        const newFolderId = await this.createPursuitFolder();
+        folderId = newFolderId;
         // If folder creation fails, continue without folder (upload to root)
         if (!folderId) {
           console.log('📁 Uploading to root folder instead');
@@ -81,7 +83,7 @@ export class GoogleDriveService {
       });
 
       // Step 2: Upload the actual file data
-      const result = await this.uploadFileData(resumableUrl, videoBlob);
+      const result = await this.uploadFileData(resumableUrl, videoBlob, onProgress);
       
       console.log('✅ Video uploaded to Google Drive:', result);
       return result;
@@ -133,7 +135,8 @@ export class GoogleDriveService {
    */
   private async uploadFileData(
     uploadUrl: string, 
-    videoBlob: Blob
+    videoBlob: Blob,
+    onProgress?: (progress: number) => void
   ): Promise<{ id: string; name: string; webViewLink: string }> {
     const chunkSize = 16 * 1024 * 1024; // 16MB chunks
     const fileSize = videoBlob.size;
@@ -156,18 +159,27 @@ export class GoogleDriveService {
       if (response.status === 200 || response.status === 201) {
         // Upload complete
         const result = await response.json();
+        if (onProgress) onProgress(100);
         return result;
       } else if (response.status === 308) {
-        // Continue uploading
+        // Continue uploading - update progress
         const range = response.headers.get('range');
         if (range) {
           const rangeMatch = range.match(/bytes=0-(\d+)/);
           if (rangeMatch) {
             startByte = parseInt(rangeMatch[1]) + 1;
+            if (onProgress) {
+              const progress = Math.round((startByte / fileSize) * 100);
+              onProgress(progress);
+            }
             continue;
           }
         }
         startByte = endByte + 1;
+        if (onProgress) {
+          const progress = Math.round((startByte / fileSize) * 100);
+          onProgress(progress);
+        }
       } else {
         const error = await response.text();
         throw new Error(`Upload failed: ${response.status} ${error}`);

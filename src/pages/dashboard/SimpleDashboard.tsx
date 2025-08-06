@@ -33,6 +33,7 @@ interface SavedRecording {
   mode: string;
   duration?: number;
   size?: number;
+  source?: string; // 'chrome-extension' for extension recordings
 }
 
 const SimpleDashboard: React.FC = () => {
@@ -48,7 +49,11 @@ const SimpleDashboard: React.FC = () => {
     const loadSavedRecordings = () => {
       const recordings: SavedRecording[] = [];
       
-      // Get all localStorage keys that start with 'recording_'
+      // Load recordings from Chrome extension (new unified storage)
+      const extensionRecordings = JSON.parse(localStorage.getItem('pursuitshipped_recordings') || '[]');
+      recordings.push(...extensionRecordings);
+      
+      // Get all localStorage keys that start with 'recording_' (legacy)
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key?.startsWith('recording_')) {
@@ -64,12 +69,29 @@ const SimpleDashboard: React.FC = () => {
         }
       }
       
+      // Remove duplicates based on ID
+      const uniqueRecordings = recordings.filter((recording, index, arr) => 
+        arr.findIndex(r => r.id === recording.id) === index
+      );
+      
       // Sort by timestamp (newest first)
-      recordings.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      setSavedRecordings(recordings);
+      uniqueRecordings.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      setSavedRecordings(uniqueRecordings);
     };
 
     loadSavedRecordings();
+
+    // Listen for new recordings from Chrome extension
+    const handleNewRecording = (event: CustomEvent) => {
+      console.log('🎬 New recording received from Chrome extension:', event.detail);
+      loadSavedRecordings(); // Reload to include the new recording
+    };
+
+    window.addEventListener('pursuitshipped:new-recording', handleNewRecording as EventListener);
+
+    return () => {
+      window.removeEventListener('pursuitshipped:new-recording', handleNewRecording as EventListener);
+    };
   }, []);
 
   const handleSignOut = async () => {
@@ -384,6 +406,14 @@ const SimpleDashboard: React.FC = () => {
                               color="primary" 
                               variant="outlined"
                             />
+                            {recording.source === 'chrome-extension' && (
+                              <Chip 
+                                label="🎬 Extension" 
+                                size="small" 
+                                color="success" 
+                                variant="filled"
+                              />
+                            )}
                             <Chip 
                               label={formatDuration(recording.duration)} 
                               size="small" 
